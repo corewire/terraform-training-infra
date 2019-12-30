@@ -1,0 +1,423 @@
+openapi: 3.0.0
+info:
+  title: Demo API
+  description: Beschreibung der Demo-Umgebung für die 'Microservices & Testing'-Schulung
+  version: 1.0.0
+servers:
+  - url: https://${swagger_url}
+  - url: http://localhost:8080/
+paths:
+  /notifications/:
+    get:
+      summary: Get all notifications
+      responses:
+        '200':
+          description: A JSON array of notifications
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/definitions/Notification'
+  /users/:
+    get:
+      summary: Get all users
+      responses:
+        '200':
+          description: A JSON array of users
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/definitions/UserRead'
+    post:
+      summary: Create a new user
+      requestBody:
+        required: True
+        content:
+          application/json:
+            schema:
+              $ref: '#/definitions/UserWrite'
+      responses:
+        '201':
+          description: The created user
+          content:
+            application/json:
+              schema:
+                $ref: '#/definitions/UserRead'
+        '400':
+          description: Bad request (E.g. 'user_name' is required)
+  /users/{id}:
+    parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+    get:
+      summary: Get a single user
+      responses:
+        '200':
+          description: The requested user
+          content:
+            application/json:
+              schema:
+                $ref: '#/definitions/UserRead'
+        '404':
+          description: Not Found
+    patch:
+      summary: Patch a single user
+      requestBody:
+        required: True
+        content:
+          application/json:
+            schema:
+              $ref: '#/definitions/UserWrite'
+      responses:
+        '200':
+          description: The updated user
+          content:
+            application/json:
+              schema:
+                $ref: '#/definitions/UserRead'
+        '404':
+          description: Not Found
+    delete:
+      summary: Delete a single user
+      security:
+        - ApiKeyAuth: []
+      responses:
+        '204':
+          description: User deleted
+        '404':
+          description: Not Found
+  /products/:
+    get:
+      summary: Get all products
+      responses:
+        '200':
+          description: A JSON array of products
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/definitions/ProductRead'
+    post:
+      summary: Create a new product
+      requestBody:
+        required: True
+        content:
+          application/json:
+            schema:
+              $ref: '#/definitions/ProductWrite'
+      responses:
+        '201':
+          description: The created product
+          content:
+            application/json:
+              schema:
+                $ref: '#/definitions/ProductRead'
+        '400':
+          description: Bad request (E.g. 'product_name' is required)
+  /products/{id}:
+    parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+    get:
+      summary: Get a single product
+      responses:
+        '200':
+          description: The requested product
+          content:
+            application/json:
+              schema:
+                $ref: '#/definitions/ProductRead'
+        '404':
+          description: Not Found
+    patch:
+      summary: Patch a single product
+      requestBody:
+        required: True
+        content:
+          application/json:
+            schema:
+              $ref: '#/definitions/ProductPatch'
+      responses:
+        '200':
+          description: The updated product
+          content:
+            application/json:
+              schema:
+                $ref: '#/definitions/ProductRead'
+        '404':
+          description: Not Found
+  /products/{id}/order/{quantity}:
+    parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+      - in: path
+        name: quantity
+        schema:
+          type: integer
+    post:
+      summary: Order a single product
+      security:
+        - ApiKeyAuth: []
+      responses:
+        '204':
+          description: Product was in stock
+        '400':
+          description: Bad Request
+        '404':
+          description: Not Found
+        '409':
+          description: Product is out of stock
+  /orders/:
+    get:
+      summary: Get all orders
+      responses:
+        '200':
+          description: A JSON array of orders
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/definitions/OrderRead'
+    post:
+      summary: Create a new order
+      requestBody:
+        required: True
+        content:
+          application/json:
+            schema:
+              $ref: '#/definitions/OrderWrite'
+      responses:
+        '201':
+          description: The created order
+          content:
+            application/json:
+              schema:
+                $ref: '#/definitions/OrderRead'
+        '400':
+          description: Bad request (E.g. Invalid 'user_id')
+  /orders/{id}:
+    parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+    get:
+      summary: Get a single order
+      responses:
+        '200':
+          description: The requested order
+          content:
+            application/json:
+              schema:
+                $ref: '#/definitions/OrderRead'
+        '404':
+          description: Not Found
+  /orders/{id}/payment-completed:
+    parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+    post:
+      summary: Callback hook for payment service
+      security:
+        - ApiKeyAuth: []
+      responses:
+        '204':
+          description: Payment completed
+        '404':
+          description: Not Found
+
+  /payments/:
+    get:
+      summary: Get all payments
+      responses:
+        '200':
+          description: A JSON array of payments
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/definitions/PaymentRead'
+    post:
+      summary: Create a new payment
+      security:
+        - ApiKeyAuth: []
+      requestBody:
+        required: True
+        content:
+          application/json:
+            schema:
+              $ref: '#/definitions/PaymentWrite'
+      responses:
+        '201':
+          description: The created payment
+          content:
+            application/json:
+              schema:
+                $ref: '#/definitions/PaymentRead'
+        '400':
+          description: Bad request (E.g. Invalid 'user_id')
+  /payments/{id}:
+    parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+    get:
+      summary: Get a single payment
+      responses:
+        '200':
+          description: The requested payment
+          content:
+            application/json:
+              schema:
+                $ref: '#/definitions/PaymentRead'
+        '404':
+          description: Not Found
+  /payments/{id}/completed:
+    parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+    post:
+      summary: Mark payment as completed
+      responses:
+        '204':
+          description: Payment completed
+        '400':
+          description: Bad Request
+        '404':
+          description: Not Found
+
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: role
+
+definitions:
+  Notification:
+    type: object
+    properties:
+      id:
+        type: integer
+      notification_type:
+        type: string
+      created_on:
+        type: string
+        format: date-time
+
+  UserRead:
+    type: object
+    properties:
+      user_id:
+        type: integer
+      user_name:
+        type: string
+
+  UserWrite:
+    type: object
+    properties:
+      user_name:
+        type: string
+
+  ProductRead:
+    type: object
+    properties:
+      product_id:
+        type: integer
+      product_name:
+        type: string
+      quantity:
+        type: integer
+
+  ProductWrite:
+    type: object
+    properties:
+      product_name:
+        type: string
+      quantity:
+        type: integer
+
+  ProductPatch:
+    type: object
+    properties:
+      product_name:
+        type: string
+
+  OrderProduct:
+    type: object
+    properties:
+      product_id:
+        type: integer
+      quantity:
+        type: integer
+
+  OrderRead:
+    type: object
+    properties:
+      order_id:
+        type: integer
+      status:
+        type: string
+      user_id:
+        type: integer
+      payment_id:
+        type: integer
+      products:
+        type: array
+        items:
+          $ref: '#/definitions/OrderProduct'
+
+  OrderWrite:
+    type: object
+    properties:
+      user_id:
+        type: integer
+      products:
+        type: array
+        items:
+          $ref: '#/definitions/OrderProduct'
+
+  PaymentRead:
+    type: object
+    properties:
+      payment_id:
+        type: integer
+      status:
+        type: string
+      amount:
+        type: integer
+      order_id:
+        type: integer
+      user_id:
+        type: integer
+      hook:
+        type: string
+
+  PaymentWrite:
+    type: object
+    properties:
+      amount:
+        type: integer
+      order_id:
+        type: integer
+      user_id:
+        type: integer
+      hook:
+        type: string

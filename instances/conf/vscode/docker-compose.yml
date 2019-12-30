@@ -1,0 +1,37 @@
+version: "2"
+services:
+  code-server:
+    depends_on:
+      - traefik
+    image: registry.derdurner.de/external/vscode:latest
+    container_name: code-server
+    network_mode: host
+    environment:
+      - PUID=1000
+      - PGID=990
+      - TZ=Europe/Berlin
+      - PASSWORD=${vscode_pass} #optional
+      - SUDO_PASSWORD=${vscode_pass} #optional
+    volumes:
+      - ./config:/config
+      - /var/run/docker.sock:/var/run/docker.sock
+    restart: unless-stopped
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=proxy
+      - traefik.vscode.frontend.rule=Host:$${HOSTNAME}.${dns_suffix}
+      - traefik.vscode.port=8443
+  
+  traefik:
+    image: traefik:1.7
+    restart: always
+    network_mode: host
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /srv/traefik/traefik.toml:/traefik.toml
+      - /srv/traefik/acme.json:/acme.json
+    ports:
+      - 80:80
+      - 443:443
+    labels: 
+      - traefik.enable=false

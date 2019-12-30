@@ -1,0 +1,15 @@
+variable "hcloud_token" {}
+variable "client-base-subdomain_prefix" {}
+variable "client-vscode-subdomain_prefix" {}
+variable "instances_domain" {}
+variable "cloudflare_email" {}
+variable "cloudflare_api_key" {}
+variable "cloudflare_zone_id" {}
+variable "base_instances_count" {}
+variable "vscode_instances_count" {}
+variable "instance_pass" {}
+variable "serversubdomain" {}
+variable "vscode_pass" {}
+variable "gitlab_root_pass" {}
+variable "gitlab_runner_token" {}
+variable "ssh_keys" {}

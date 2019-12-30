@@ -1,0 +1,37 @@
+debug = false
+defaultEntryPoints = ["https", "http"]
+
+#[api]
+#  entryPoint = "traefik"
+#  dashboard = true
+#  address = ":8080"
+
+[accessLog]
+filePath = "/var/log/access.log"
+
+[entryPoints]
+  [entryPoints.http]
+  address = ":80"
+    [entryPoints.http.redirect]
+    entryPoint = "https"
+  [entryPoints.https]
+  address = ":443"
+  [entryPoints.https.tls]
+
+[docker]
+endpoint = "unix:///var/run/docker.sock"
+domain = ""
+watch = true
+exposedByDefault = false
+
+[acme]
+################################ Set me Up! ##################################
+email = "mail@example.com"
+##############################################################################
+storage = "acme.json"
+caServer = "https://acme-v02.api.letsencrypt.org/directory"
+entryPoint = "https"
+onHostRule= true
+onDemand = false
+[acme.httpChallenge]
+entrypoint = "http"
