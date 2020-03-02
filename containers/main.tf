@@ -5,8 +5,8 @@ provider "docker" {
 
 provider "cloudflare" {
   version = "~> 2.0"
-  email   = "${var.cloudflare_email}"
-  api_key = "${var.cloudflare_api_key}"
+  email   = var.cloudflare_email
+  api_key = var.cloudflare_api_key
 }
 
 # Traefik
@@ -46,7 +46,7 @@ resource "docker_container" "Traefik" {
   }
 
   networks_advanced{
-    name        = "${docker_network.proxy.name}"
+    name        = docker_network.proxy.name
   }
 }
 
@@ -54,15 +54,26 @@ resource "docker_container" "Traefik" {
 resource "docker_container" "Gitlab" {
   name            = "Gitlab"
   image           = "gitlab/gitlab-ce:latest"
-  labels          = {
-    "traefik.enable" = "true"
-    "traefik.docker.network" = "proxy"
-    "traefik.gitlab.frontend.rule" = "Host:git.${var.server_dns}"
-    "traefik.gitlab.port" = "443"
+
+  labels {
+    label = "traefik.enable"
+    value = "true"
+  }
+  labels {
+    label = "traefik.docker.network"
+    value = "proxy"
+  }
+  labels {
+    label = "traefik.gitlab.frontend.rule"
+    value = "Host:git.${var.server_dns}"
+  }
+  labels {
+    label = "traefik.gitlab.port"
+    value = "443"
   }
   restart         = "always"
   networks_advanced{
-    name        = "${docker_network.proxy.name}"
+    name          = docker_network.proxy.name
   }
   ports {
     internal = "22"
@@ -87,14 +98,15 @@ resource "docker_container" "Gitlab" {
 
 # Gitlab Runner REGISTER!!! (run once)
 resource "docker_container" "gitlab-runner-register" {
-  count         = "${var.gl_runner_register}"
+  count         = var.gl_runner_register
   depends_on    = [
     docker_container.Gitlab
   ]
   name          = "gitlab-runner"
   image         = "gitlab/gitlab-runner:latest"
-  labels        = {
-    "traefik.enable" = "false"
+  labels {
+    label = "traefik.enable"
+    value = "false"
   }
   command       = [
     "register",
@@ -125,14 +137,15 @@ resource "docker_container" "gitlab-runner-register" {
 }
 
 resource "docker_container" "gitlab-runner" {
-  count         = "${var.gl_runner_count}"
+  count         = var.gl_runner_count
   depends_on    = [
     docker_container.gitlab-runner-register
   ]
   name          = "gitlab-runner"
   image         = "gitlab/gitlab-runner:latest"
-  labels        = {
-    "traefik.enable" = "false"
+  labels {
+    label = "traefik.enable"
+    value = "false"
   }
   mounts {
     source      = "/srv/gl_runner/config"
@@ -163,19 +176,29 @@ resource "docker_container" "app-nginx" {
   ]
   name            = "app-nginx"
   image           = "nginx"
-  labels          = {
-    "traefik.enable" = "true"
-    "traefik.docker.network" = "proxy"
-    "traefik.gitlab.frontend.rule" = "Host:${var.server_dns}"
-    "traefik.gitlab.port" = "80"
+  labels {
+    label = "traefik.enable"
+    value = "true"
+  }
+  labels {
+    label = "traefik.docker.network"
+    value = "proxy"
+  }
+  labels {
+    label = "traefik.gitlab.frontend.rule"
+    value = "Host:${var.server_dns}"
+  }
+  labels {
+    label = "traefik.gitlab.port"
+    value = "80"
   }
   restart         = "always"
   
   networks_advanced {
-    name          = "${docker_network.proxy.name}"
+    name          = docker_network.proxy.name
   }
   networks_advanced {
-    name          = "${docker_network.api.name}"
+    name          = docker_network.api.name
   }
   mounts {
     source      = "/srv/api-demo/volumes/nginx/nginx.conf"
@@ -195,7 +218,7 @@ resource "docker_container" "swagger" {
   restart         = "always"
   
   networks_advanced {
-    name          = "${docker_network.api.name}"
+    name          = docker_network.api.name
   }
   env = [
     "SWAGGER_JSON=/docs/swagger.yml",
@@ -213,7 +236,7 @@ resource "docker_container" "app-notifications" {
   restart         = "always"
   
   networks_advanced {
-    name          = "${docker_network.api.name}"
+    name          = docker_network.api.name
   }
   env           = [
     "DJANGO_BASE_PATH=api/"
@@ -239,7 +262,7 @@ resource "docker_container" "app-users" {
   ]
   
   networks_advanced {
-    name          = "${docker_network.api.name}"
+    name          = docker_network.api.name
   }
   mounts {
     source      = "/srv/api-demo/volumes/static/users"
@@ -262,7 +285,7 @@ resource "docker_container" "app-products" {
   ]
   
   networks_advanced {
-    name          = "${docker_network.api.name}"
+    name          = docker_network.api.name
   }
   mounts {
     source      = "/srv/api-demo/volumes/static/products"
@@ -285,7 +308,7 @@ resource "docker_container" "app-orders" {
   ]
   
   networks_advanced {
-    name          = "${docker_network.api.name}"
+    name          = docker_network.api.name
   }
   mounts {
     source      = "/srv/api-demo/volumes/static/orders"
@@ -307,7 +330,7 @@ resource "docker_container" "app-payments" {
   ]
   
   networks_advanced {
-    name          = "${docker_network.api.name}"
+    name          = docker_network.api.name
   }
   mounts {
     source      = "/srv/api-demo/volumes/static/payments"
@@ -329,7 +352,7 @@ resource "docker_container" "app-soap" {
   ]
   
   networks_advanced {
-    name          = "${docker_network.api.name}"
+    name          = docker_network.api.name
   }
 }
 
@@ -351,19 +374,29 @@ resource "docker_container" "staging-app-nginx" {
   ]
   name            = "staging-app-nginx"
   image           = "nginx"
-  labels          = {
-    "traefik.enable" = "true"
-    "traefik.docker.network" = "proxy"
-    "traefik.gitlab.frontend.rule" = "Host:staging.${var.server_dns}"
-    "traefik.gitlab.port" = "80"
+  labels {
+    label = "traefik.enable"
+    value = "true"
+  }
+  labels {
+    label = "traefik.docker.network"
+    value = "proxy"
+  }
+  labels {
+    label = "traefik.gitlab.frontend.rule"
+    value = "Host:staging.${var.server_dns}"
+  }
+  labels {
+    label = "traefik.gitlab.port"
+    value = "80"
   }
   restart         = "always"
   
   networks_advanced {
-    name          = "${docker_network.proxy.name}"
+    name          = docker_network.proxy.name
   }
   networks_advanced {
-    name          = "${docker_network.staging-api.name}"
+    name          = docker_network.staging-api.name
     aliases       = ["app-nginx"]
   }
   mounts {
@@ -384,7 +417,7 @@ resource "docker_container" "staging-app-notifications" {
   restart         = "always"
   
   networks_advanced {
-    name          = "${docker_network.staging-api.name}"
+    name          = docker_network.staging-api.name
     aliases       = ["app-notifications"]
   }
   env           = [
@@ -401,7 +434,7 @@ resource "docker_container" "staging-app-users" {
   ]
   
   networks_advanced {
-    name          = "${docker_network.staging-api.name}"
+    name          = docker_network.staging-api.name
     aliases       = ["app-users"]
   }
 }
@@ -415,7 +448,7 @@ resource "docker_container" "staging-app-products" {
   ]
   
   networks_advanced {
-    name          = "${docker_network.staging-api.name}"
+    name          = docker_network.staging-api.name
     aliases       = ["app-products"]
   }
 }
@@ -429,7 +462,7 @@ resource "docker_container" "staging-app-orders" {
   ]
   
   networks_advanced {
-    name          = "${docker_network.staging-api.name}"
+    name          = docker_network.staging-api.name
     aliases       = ["app-orders"]
   }
 }
@@ -442,7 +475,7 @@ resource "docker_container" "staging-app-payments" {
   ]
   
   networks_advanced {
-    name          = "${docker_network.staging-api.name}"
+    name          = docker_network.staging-api.name
     aliases       = ["app-payments"]
   }
 }
@@ -455,7 +488,7 @@ resource "docker_container" "staging-app-soap" {
   ]
   
   networks_advanced {
-    name          = "${docker_network.staging-api.name}"
+    name          = docker_network.staging-api.name
     aliases       = ["app-soap"]
   }
 }
