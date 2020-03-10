@@ -33,4 +33,4 @@ tf apply
 Now get a Coffee gitlab will take it's time.
 
 ## 3. Setup Gitlab
-### Read the README.md in Gitlab Folder!
+### Read the README.md in Gitlab Folder
